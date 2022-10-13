@@ -28,10 +28,10 @@ if __name__ == '__main__':
 
     # masks
     index = torch.arange(tstamps.shape[0], device='cuda')
-    thresh = args.min_neighbor_count * torch.ones_like(disps.mean(dim=[1, 2]))
+    thresh = args.max_abs_error * torch.ones_like(disps.mean(dim=[1, 2]))
     counts = droid_backends.depth_filter(
         poses, disps, intrinsics[0], index, thresh)
-    masks = ((counts >= args.max_abs_error) & (
+    masks = ((counts >= args.min_neighbor_count) & (
         disps > .5*disps.mean(dim=[1, 2], keepdim=True)))
     masks = masks.reshape(-1)
 
