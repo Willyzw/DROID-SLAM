@@ -65,7 +65,8 @@ def save_reconstruction(droid, reconstruction_path):
     t = droid.video.counter.value
     tstamps = droid.video.tstamp[:t].cpu().numpy()
     images = droid.video.images[:t].cpu().numpy()
-    disps = droid.video.disps_up[:t].cpu().numpy()
+    disps = droid.video.disps[:t].cpu().numpy()
+    disps_up = droid.video.disps_up[:t].cpu().numpy()
     poses = droid.video.poses[:t].cpu().numpy()
     intrinsics = droid.video.intrinsics[:t].cpu().numpy()
 
@@ -73,6 +74,7 @@ def save_reconstruction(droid, reconstruction_path):
     np.save("reconstructions/{}/tstamps.npy".format(reconstruction_path), tstamps)
     np.save("reconstructions/{}/images.npy".format(reconstruction_path), images)
     np.save("reconstructions/{}/disps.npy".format(reconstruction_path), disps)
+    np.save("reconstructions/{}/disps_up.npy".format(reconstruction_path), disps_up)
     np.save("reconstructions/{}/poses.npy".format(reconstruction_path), poses)
     np.save("reconstructions/{}/intrinsics.npy".format(reconstruction_path), intrinsics)
 
