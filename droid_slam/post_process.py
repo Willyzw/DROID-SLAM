@@ -1,3 +1,5 @@
+import os
+import re
 import torch
 import lietorch
 import numpy as np
@@ -32,6 +34,8 @@ def save_reconstruction(
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument("--imagedir", type=str, help="path to image directory")
+    parser.add_argument("--stride", type=int, help="frame stride")
     parser.add_argument("--reconstruction_path",
                         help="path to saved reconstruction")
     parser.add_argument("--max_abs_error", default=0.01,
@@ -75,7 +79,9 @@ if __name__ == '__main__':
     print(f"saved to {outfile}")
 
     # export trajectory
+    tstamps_full = np.array([float(re.findall(r"[+]?(?:\d*\.\d+|\d+)", x)[-1]) for x in sorted(os.listdir(args.imagedir))][::args.stride])[..., np.newaxis]
+    ttraj = np.concatenate([tstamps_full, traj], axis=1)
     np.savetxt(f"{folder}/traj_kf.txt", poses_wc.cpu().numpy())       #  for evo evaluation
-    np.savetxt(f"{folder}/traj_full.txt", traj)         #  for evo evaluation
-    np.savetxt(f"{folder}/traj_full.poly", traj[:,:3])  #  for visualization in cloudcompare
+    np.savetxt(f"{folder}/traj_full.txt", ttraj)                      #  for evo evaluation
+    np.savetxt(f"{folder}/traj_full.poly", ttraj[:,1:4])              #  for visualization in cloudcompare
     print("done")
