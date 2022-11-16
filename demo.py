@@ -13,6 +13,7 @@ import argparse
 
 from torch.multiprocessing import Process
 from droid import Droid
+from post_process import save_reconstruction
 
 import torch.nn.functional as F
 
@@ -54,27 +55,6 @@ def image_stream(imagedir, calib, stride):
         intrinsics[1::2] *= (h1 / h0)
 
         yield t, image[None], intrinsics
-
-
-def save_reconstruction(droid, reconstruction_path):
-
-    from pathlib import Path
-    import random
-    import string
-
-    t = droid.video.counter.value
-    tstamps = droid.video.tstamp[:t].cpu().numpy()
-    images = droid.video.images[:t].cpu().numpy()
-    disps = droid.video.disps_up[:t].cpu().numpy()
-    poses = droid.video.poses[:t].cpu().numpy()
-    intrinsics = droid.video.intrinsics[:t].cpu().numpy()
-
-    Path("reconstructions/{}".format(reconstruction_path)).mkdir(parents=True, exist_ok=True)
-    np.save("reconstructions/{}/tstamps.npy".format(reconstruction_path), tstamps)
-    np.save("reconstructions/{}/images.npy".format(reconstruction_path), images)
-    np.save("reconstructions/{}/disps.npy".format(reconstruction_path), disps)
-    np.save("reconstructions/{}/poses.npy".format(reconstruction_path), poses)
-    np.save("reconstructions/{}/intrinsics.npy".format(reconstruction_path), intrinsics)
 
 
 if __name__ == '__main__':
@@ -128,7 +108,9 @@ if __name__ == '__main__':
         
         droid.track(t, image, intrinsics=intrinsics)
 
-    if args.reconstruction_path is not None:
-        save_reconstruction(droid, args.reconstruction_path)
-
     traj_est = droid.terminate(image_stream(args.imagedir, args.calib, args.stride))
+
+    if args.reconstruction_path is not None:
+        save_reconstruction(droid, traj_est, args.reconstruction_path)
+
+    print("Done")
